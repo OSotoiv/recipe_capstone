@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-center">
+    Search Recipies By Ingredients
+</h1>
+<div class="container col-4 mb-3">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        {%for field in form if field.widget.input_type != 'hidden'%}
+        <div class="mb-3">
+            <h5 class="card-title">{{field.label(class_='form-label')}}</h5>
+            <ol>
+                {% for input in field%}
+                {{input.label}}
+
+                {{input(class_='form-control mb-3')}}
+                {% endfor %}
+            </ol>
+            {% for error in field.errors %}
+            <p class="text-danger">
+                {{error}}
+            </p>
+            {% endfor%}
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">submit</button>
+    </form>
+</div>
+{% endblock %}

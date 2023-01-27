@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container justify-items-center mb-3">
+    <div class="row">
+        <div class="jumbotron">
+            <div id="recipe-backdrop" class="full-width">
+                <img id='recipe_img' src="{{recipe.image}}">
+            </div>
+            <h1 class="display-4">{{recipe.title}}</h1>
+            <p class="lead">{{recipe.summary|safe}}</p>
+            <hr class="my-4">
+            <div class="container">
+                <p>Ready In: {{recipe.readyInMinutes}} min</p>
+                <p>Serving Size: {{recipe.servings}}</p>
+                <p class="lead" id="saved_or_not">
+                    {% if recipe.id in user_cookbook %}
+                    <button class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-bookmark">
+                        </i>SAVED
+                    </button>
+                    {% else %}
+                    <button data-recipe_id="{{recipe.id}}" data-recipe_title="{{recipe.title}}"
+                        class="btn btn-primary btn-sm" id="save_recipe">
+                        <i class="fa-regular fa-bookmark"></i>
+                        Save to Cookbook
+                    </button>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <h2>Ingredients List</h2>
+            <ol>
+                {% for item in recipe.extendedIngredients%}
+                <li id="ingredient">{{item.name.capitalize()}} <ul>
+                        <li>{{item.amount}} {{item.unit}}</li>
+                    </ul>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+        <div class="col-3">
+            <h2>Instructions</h2>
+            <div id="accordion">
+                {% for step in recipe.analyzedInstructions[0].steps %}
+                <div class="card">
+                    <div class="card-header" id="heading-{{step.number}}">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#step-{{step.number}}"
+                                aria-expanded="true" aria-controls="step-{{step.number}}">
+                                Step {{step.number}}
+                            </button>
+                        </h5>
+                    </div>
+
+                    <div id="step-{{step.number}}" class="collapse" aria-labelledby="step-{{step.number}}"
+                        data-parent="#accordion">
+                        <div class="card-body">
+                            {% if step.ingredients %}
+                            <p>Ingredients:</p>
+                            <ul>
+                                {% for item in step.ingredients%}
+                                <li>{{item.name}}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <p class="card-text">Instructions:</p>
+                            {{step.step}}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

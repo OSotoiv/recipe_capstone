@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mb-4">
+    <h1 class="text-center">Top 5 Recipes Saved Recipes</h1>
+    <div class="d-flex align-content-stretch flex-wrap">
+        {% for recipe in recipes %}
+        <div class="card m-2" style="width: 18rem;">
+            <img class="card-img-top" src="{{recipe.image_url}}" alt="image for {{recipe.title}}">
+            <div class="card-body">
+                <h5 class="card-title p-4 m-2">{{recipe.title}}</h5>
+                <a href="/search/{{recipe.spoonacular_id}}/instructions"
+                    class="btn btn-primary position-absolute bottom-0 start-0 m-2">Lets Cook!</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

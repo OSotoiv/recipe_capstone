@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-center">
+    Search Recipies By Ingredients
+</h1>
+<div class="container mb-3">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="row mb-3">
+            {%for field in form if field.widget.input_type != 'hidden'%}
+            <div class="col-3">
+                <h5 class="card-title">{{field.label(class_='form-label')}}</h5>
+                {% if field.type == 'FieldList' %}
+                <ol class="">
+                    {% for input in field%}
+                    {{input(class_='form-control flex-grow-1')}}
+                    {% endfor %}
+                </ol>
+                {% elif field.type == 'SelectField'%}
+                {{field(class_='form-select')}}
+                {%endif%}
+            </div>
+
+
+            {% for error in field.errors %}
+            <p class="text-danger">
+                {{error}}
+            </p>
+            {% endfor%}
+            {% endfor %}
+        </div>
+        <button class="btn btn-primary" type="submit">submit</button>
+    </form>
+</div>
+{% endblock %}
