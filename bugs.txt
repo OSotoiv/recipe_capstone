@@ -1,0 +1,4 @@
+01: The update_user_images function will delete old images from the file when the user updates the for header or avatar image
+but in the event that the user causes an error like a duplicate key error from using an email or username that already exist, 
+the image has already been saved. if you delete the image when you catch the error you will be deleting the image thats been saved.
+This should all get better with using a service like cloudinary to store images. storing in a file is too complicated. 

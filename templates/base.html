@@ -47,9 +47,10 @@
                     {% endif %}
                 </ul>
             </div>
-            <div>
+            <div class="me-4">
                 {% if session['curr_user']%}
                 <a href="/users/{{session['curr_user']}}">
+                    <small class="fw-b">{{session['username']}}</small>
                     <i class="fa-solid fa-user-gear"></i>
                     {{session['curr_user']}}
                 </a>

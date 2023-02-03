@@ -1,13 +1,15 @@
 {% extends 'users/detail.html' %}
 {% block user_recipes %}
 <div class="container mb-4">
-  <h1 class="text-center">Cookbook</h1>
+  <h1 class="text-center fw-bold">Cookbook</h1>
   <div class="d-flex align-content-stretch flex-wrap">
     {% for recipe in recipes %}
     <div class="card m-2" style="width: 18rem;">
       <img class="card-img-top" src="{{recipe.image_url}}" alt="image for {{recipe.title}}">
-      <div class="card-body">
-        <h5 class="card-title p-4 m-2">{{recipe.title}}</h5>
+      <div class="card-body mb-5">
+        <h5 class="card-title fw-bold">{{recipe.title}}</h5>
+      </div>
+      <div class="d-flex">
         <a href="/search/{{recipe.spoonacular_id}}/instructions"
           class="btn btn-primary position-absolute bottom-0 start-0 m-2">Lets Cook!</a>
       </div>

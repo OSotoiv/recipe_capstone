@@ -55,12 +55,12 @@ class User(db.Model):
 
     image_url = db.Column(
         db.Text,
-        default="/static/img/default-pic.png",
+        default="default-pic.png",
     )
 
     header_image_url = db.Column(
         db.Text,
-        default=""
+        default="default-pic.png"
     )
 
     bio = db.Column(
@@ -83,10 +83,12 @@ class User(db.Model):
     def update(self, form):
         self.username = form.username.data,
         self.email = form.email.data,
-        self.image_url = form.image_url.data,
+        self.image_url = form.image_url.filename,
+        self.header_image_url = form.header_image_url.filename,
+        self.bio = form.bio.data
 
     @classmethod
-    def signup(cls, username, email, password, image_url):
+    def signup(cls, username, email, password, image_url, header_image_url):
         """Sign up user. Hashes password and adds user to system"""
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
@@ -96,6 +98,7 @@ class User(db.Model):
             email=email,
             password=hashed_pwd,
             image_url=image_url,
+            header_image_url=header_image_url
         )
 
         db.session.add(user)

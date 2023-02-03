@@ -3,9 +3,10 @@
 {% block content %}
 
 <div id="recipe-hero" class="full-width">
-    <img src="{{user.header_image_url}}" alt="Hearder image for {{user.username}}">
+    <img class="img-fluid" src="/static/profile_imgs/{{user.header_image_url}}"
+        alt="Hearder image for {{user.username}}">
 </div>
-<img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+<img src="/static/profile_imgs/{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
 <div class="row full-width">
     <div class="container">
         <div class="row justify-content-end">

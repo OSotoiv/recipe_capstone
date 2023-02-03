@@ -11,15 +11,17 @@
                 <div class="card user-card">
                     <div class="card-inner">
                         <div class="image-wrapper">
-                            <img src="{{ user.header_image_url }}" alt="" class="card-hero">
+                            <img src="/static/profile_imgs/{{ user.header_image_url }}" alt="user header image"
+                                class="card-hero">
                         </div>
                         <div class="card-contents">
                             <a href="/users/{{ user.id }}" class="card-link">
-                                <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" class="card-image">
+                                <img src="/static/profile_imgs/{{ user.image_url }}"
+                                    alt="Image for {{ user.username }} profile" class="card-image">
                                 <p>@{{ user.username }}</p>
                             </a>
                         </div>
-                        <p class="card-bio">{{user.bio}}</p>
+                        <p class="card-bio">Bio: {{user.bio}}</p>
                     </div>
                 </div>
             </div>

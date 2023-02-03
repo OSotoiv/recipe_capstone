@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from wtforms import StringField, EmailField, PasswordField, FieldList, TextAreaField, RadioField, SelectField
-from wtforms.validators import InputRequired, Optional, NumberRange, ValidationError, DataRequired, Email, Length
+from wtforms.validators import InputRequired, ValidationError, DataRequired, Length, Email, Regexp
 
 
 class MessageForm(FlaskForm):
@@ -12,10 +13,22 @@ class MessageForm(FlaskForm):
 class UserAddForm(FlaskForm):
     """Form for adding users."""
 
+    def allowed_file(form, field):
+        file = field.data
+        ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+        # file is a file and has a file name. strings will not have file name
+        if not file or type(file) == str:
+            return True
+        allow = '.' in file.filename and \
+                file.filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        if allow == False:
+            raise ValidationError('File type not allowed...')
+
     username = StringField('Username', validators=[DataRequired()])
     email = EmailField('E-mail', validators=[DataRequired()])
     password = PasswordField('Password', validators=[Length(min=6)])
-    image_url = StringField('(Optional) Image URL')
+    image_url = FileField('Profile Image', validators=[allowed_file])
+    header_image_url = FileField('Background Image', validators=[allowed_file])
 
 
 class LoginForm(FlaskForm):
@@ -27,6 +40,7 @@ class LoginForm(FlaskForm):
 
 class UserUpdateForm(UserAddForm):
     """form for updating user"""
+    bio = TextAreaField('Bio: Share a little about your interiest')
 
 # class SearchByIngredients(Form):
 #     ingredient = StringField('Ingredient')

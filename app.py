@@ -8,6 +8,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import func
 from env_keys.env_secrets import APP_CONFIG_KEY
 from search_by import search_api_complex, search_api_by_ingredients, search_api_for_instructions, search_api_random_recipe
+from helpers import save_user_images, update_user_images
+
+
+CURR_USER_KEY = "curr_user"
+UPLOAD_FOLDER = 'static/profile_imgs'
+
 
 app = Flask(__name__)
 app.app_context().push()
@@ -16,10 +22,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = APP_CONFIG_KEY
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 debug = DebugToolbarExtension(app)
 connect_db(app)
-
-CURR_USER_KEY = "curr_user"
 
 
 @app.before_request
@@ -37,6 +43,7 @@ def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
+    session['username'] = user.username
 
 
 def do_logout():
@@ -44,6 +51,7 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+        del session['username']
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -58,16 +66,20 @@ def register():
     form = UserAddForm()
 
     if form.validate_on_submit():
+        form = save_user_images(form)
         try:
             user = User.signup(
                 username=form.username.data,
                 password=form.password.data,
                 email=form.email.data,
-                image_url=form.image_url.data or User.image_url.default.arg,
+                image_url=form.image_url.data.filename if form.image_url.data else User.image_url.default.arg,
+                header_image_url=form.header_image_url.data.filename if form.header_image_url.data else User.header_image_url.default.arg
             )
             db.session.commit()
 
         except IntegrityError:
+            os.remove(f'{UPLOAD_FOLDER}/{form.image_url.data.filename}')
+            os.remove(f'{UPLOAD_FOLDER}/{form.header_image_url.data.filename}')
             flash("Username already taken", 'danger')
             return render_template('users/register.html', form=form)
 
@@ -128,19 +140,48 @@ def user_profile():
     form = UserUpdateForm(obj=user)
     if form.validate_on_submit():
         if User.authenticate(g.user.username, form.password.data):
-            user.update(form)
-            db.session.commit()
-            flash('UPDATED!', 'success')
-            return redirect(f"/user/{g.user.id}")
+            form = update_user_images(form, user)
+            try:
+                # bug: 01
+                user.update(form)
+                db.session.commit()
+                do_login(user)
+                flash('UPDATED!', 'success')
+                return redirect(f"/users/{g.user.id}")
+            except:
+                db.session.rollback()
+                form.username.errors.append('Username/Email already exist')
+                return render_template('users/edit.html', form=form, user=user)
+
         else:
             form.password.errors.append('Incorrect Password')
     return render_template('users/edit.html', form=form, user=user)
+
+
+@app.route('/users/delete', methods=["POST"])
+def delete_user():
+    """Delete user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+    os.remove(f'{UPLOAD_FOLDER}/{g.user.image_url}')
+    os.remove(f'{UPLOAD_FOLDER}/{g.user.header_image_url}')
+    flash('Sorry to see you go...', 'success')
+    return redirect("/register")
 
 
 @app.route('/users')
 def users():
     users = User.query.all()
     return render_template('users/index.html', users=users)
+
+
 ########################### SEARCH ROUTES##########################
 
 
@@ -151,7 +192,7 @@ def search_ingredients():
         '''get inputs val that is not NULL'''
         data = [x for x in form.ingredients.data if x]
         resp = search_api_by_ingredients(data)
-        return render_template('recipes/show_by_ingredients.html', recipes=resp, ingredients=data)
+        return render_template('recipes/show_search_by_res.html', recipes=resp, ingredients=data, complex=False)
     return render_template('search/form_by_ingredients.html', form=form)
 
 
@@ -185,8 +226,14 @@ def complex_search():
         ingredients = [x for x in form.ingredients.data if x]
         diet = form.diet.data
         meal_type = form.meal_type.data
-        res = search_api_complex(cuisine, ingredients, diet, meal_type)
-        return res
+        resp = search_api_complex(cuisine, ingredients, diet, meal_type)
+        return render_template('recipes/show_search_by_res.html',
+                               recipes=resp.get('results'),
+                               complex=True,
+                               cuisine=cuisine,
+                               ingredients=ingredients,
+                               diet=diet,
+                               meal_type=meal_type)
     return render_template('search/complex_form.html', form=form)
 
 
@@ -195,7 +242,15 @@ def save_to_cookbook(recipe_id, recipe_title):
     if not g.user:
         return jsonify({'response': 'not logged in'})
     user = User.query.get(g.user.id)
+    users_cookbook = [x[0] for x in db.session.query(Cookbook.recipe_id).filter(
+        Cookbook.user_id == user.id).all()]
     data = request.json
+    if recipe_id in users_cookbook:
+        cookbook = Cookbook.query.filter_by(
+            recipe_id=recipe_id, user_id=user.id).first()
+        db.session.delete(cookbook)
+        db.session.commit()
+        return jsonify({'response': 'unsaved'})
     recipe = Recipe.query.filter(Recipe.spoonacular_id == recipe_id).first()
     if recipe:
         # if the recipe is already saved just add to users cookbook

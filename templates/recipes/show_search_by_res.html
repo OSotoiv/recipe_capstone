@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">
+        Showing Recipe's With: {%for ingredient in ingredients%}{{ingredient.upper()}} {%endfor%}
+        {% if complex %} {{cuisine.upper()}} {{diet.upper()}} {{meal_type.upper()}} {% endif %}
+    </h1>
+    <div class="row justify-content-evenly">
+        {% for recipe in recipes %}
+        <div class="card mb-3" style="width: 18rem;">
+            <img class="card-img-top" src="{{recipe.image}}" alt="Card image cap">
+            <div class="card-body">
+                <h5 class="card-title">{{recipe.title}}</h5>
+                <p class="card-text">Ingredients needed:</p>
+                <ul class="text-success font-weight-bold">
+                    {% for item in recipe.missedIngredients%}
+                    <li class="font-weight-bold">{{item.name}}</li>
+                    {% endfor %}
+                    {% for item in recipe.usedIngredients%}
+                    <li>{{item.name}}</li>
+                    {% endfor %}
+                </ul>
+                {% if recipe.unusedIngredients %}
+                <p class="card-text">Ingredients not used:</p>
+                <ul class="card-text text-danger">
+                    {% for item in recipe.unusedIngredients %}
+                    <li>{{item.name}}</li>
+                    {% endfor%}
+                </ul>
+                {% endif %}
+                <a href="/search/{{recipe.id}}/instructions" class="btn btn-primary">Lets Cook!</a>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

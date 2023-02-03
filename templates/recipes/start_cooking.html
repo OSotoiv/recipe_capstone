@@ -14,7 +14,8 @@
                 <p>Serving Size: {{recipe.servings}}</p>
                 <p class="lead" id="saved_or_not">
                     {% if recipe.id in user_cookbook %}
-                    <button class="btn btn-secondary btn-sm">
+                    <button data-recipe_id="{{recipe.id}}" data-recipe_title="{{recipe.title}}" id="save_recipe"
+                        class="btn btn-secondary btn-sm">
                         <i class="fa-solid fa-bookmark">
                         </i>SAVED
                     </button>

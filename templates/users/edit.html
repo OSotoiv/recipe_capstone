@@ -2,20 +2,50 @@
 
 {% block content %}
 
-<div class="row justify-content-md-center">
+<div class="row justify-content-md-center mb-3">
     <div class="col-md-4">
-        <h2 class="join-message">Edit Your Profile.</h2>
-        <form method="POST" id="user_form">
+        <form method="POST" id="user_form" enctype="multipart/form-data">
+            <h2 class="join-message">Edit Profile</h2>
             {{ form.hidden_tag() }}
-
-            {% for field in form if field.widget.input_type != 'hidden' and field.name != 'password' %}
+            {% for field in form if field.widget.input_type not in ['hidden','password','file'] %}
             {% for error in field.errors %}
-            <span class="text-danger">{{ error }}</span>
+            <span class="text-danger fw-bold">{{ error }}</span>
             {% endfor %}
             {{ field(placeholder=field.label.text, class="form-control") }}
             {% endfor %}
 
-            <p>To confirm changes, enter your password:</p>
+            <h3 class="join-message">Images</h3>
+            <div class="card mb-2" style="width: 80%;">
+                <img src="/static/profile_imgs/{{user.image_url}}" class="card-img-top"
+                    alt="Image for {{ user.username }} profile">
+                <div class="card-body">
+                    <h5 class="card-title">{{form.image_url.label.text}}</h5>
+                    <small class="fw-bold">Allowed file types: (.txt .pdf .png .jpg .jpeg .gif)</small>
+                    {{form.image_url(placeholder=form.image_url.label.text, class="form-control")}}
+                    {% if form.image_url.errors %}
+                    {% for error in form.image_url.errors %}
+                    <small class="text-danger fw-bold">
+                        {{ error }}
+                    </small>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card mb-2" style="width: 80%;">
+                <img src="/static/profile_imgs/{{user.header_image_url}}" class="card-img-top" alt="user header image">
+                <div class="card-body">
+                    <h5 class="card-title">{{form.header_image_url.label.text}}</h5>
+                    <small class="fw-bold">Allowed file types: (.txt .pdf .png .jpg .jpeg .gif)</small>
+                    {{form.header_image_url(placeholder=form.header_image_url.label.text, class="form-control")}}
+                    {% if form.header_image_url.errors %}
+                    {% for error in form.header_image_url.errors %}
+                    <small class="text-danger fw-bold">
+                        {{ error }}
+                    </small>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
             {% if form.password.errors %}
             {% for error in form.password.errors %}
             <span class="text-danger">
@@ -23,11 +53,11 @@
             </span>
             {% endfor %}
             {% endif %}
+            <h5>To confirm changes, enter your password:</h5>
             {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
-
             <div class="edit-btn-area">
-                <button class="btn btn-success">Edit this user!</button>
-                <a href="/users/{{ user.id }}" class="btn btn-outline-secondary">Cancel</a>
+                <button class="btn btn-success">submit</button>
+                <a href="/users/{{ user.id }}" class="btn btn-danger">Cancel</a>
             </div>
         </form>
     </div>
